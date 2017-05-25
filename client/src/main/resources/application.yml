@@ -1,0 +1,29 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: client
+
+endpoints:
+  health:
+    enabled: true
+    sensitive: true
+  restart:
+    enabled: true
+  shutdown:
+    enabled: true
+
+proxy-service:
+  ribbon:
+    eureka.enabled: false
+    listOfServers: localhost:8081,localhost:8082
+    ServerListRefreshInterval: 15000
+
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 30000

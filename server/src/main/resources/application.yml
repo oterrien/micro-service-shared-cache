@@ -1,0 +1,22 @@
+logging:
+  level:
+    org.springframework.web: WARN
+    com.ote.test: INFO
+
+server:
+  port: ${PORT:8081}
+
+spring:
+  application:
+    name: proxy-service
+
+endpoints:
+  health:
+    enabled: true
+    sensitive: true
+  restart:
+    enabled: true
+  shutdown:
+    enabled: true
+
+h2-dataservice.uri: http://localhost:8083
