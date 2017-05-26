@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.ote.test</groupId>
-    <artifactId>micro-service-shared-cache</artifactId>
+    <artifactId>spring-boot-histrix-ribbon-redis</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 

@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <parent>
-        <artifactId>micro-service-shared-cache</artifactId>
+        <artifactId>spring-boot-histrix-ribbon-redis</artifactId>
         <groupId>com.ote.test</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
