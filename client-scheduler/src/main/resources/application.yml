@@ -1,0 +1,25 @@
+server:
+  port: ${PORT:8079}
+
+spring:
+  application:
+    name: client-scheduler
+
+endpoints:
+  health:
+    enabled: true
+    sensitive: true
+  restart:
+    enabled: true
+  shutdown:
+    enabled: true
+
+proxy-service.uri: localhost:8081
+
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 30000

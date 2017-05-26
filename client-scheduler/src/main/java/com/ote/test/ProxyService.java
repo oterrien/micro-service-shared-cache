@@ -3,6 +3,7 @@ package com.ote.test;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -12,27 +13,30 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 public class ProxyService {
 
+    @Value("${proxy-service.uri}")
+    private String proxyUri;
+
     @Autowired
     private RestTemplate restTemplate;
 
     @HystrixCommand(fallbackMethod = "readFallback")
     public UserPayload read(Integer id) {
-        return restTemplate.getForObject("http://proxy-service/users/" + id, UserPayload.class);
+        return restTemplate.getForObject("http://"+proxyUri+"/users/" + id, UserPayload.class);
     }
 
     @HystrixCommand(fallbackMethod = "createFallback")
     public UserPayload create(UserPayload user) {
-        return restTemplate.exchange("http://proxy-service/users/", HttpMethod.PUT, new HttpEntity<>(user), UserPayload.class).getBody();
+        return restTemplate.exchange("http://"+proxyUri+"/users/", HttpMethod.PUT, new HttpEntity<>(user), UserPayload.class).getBody();
     }
 
     @HystrixCommand(fallbackMethod = "updateFallback")
     public UserPayload update(Integer id, UserPayload user) {
-        return restTemplate.exchange("http://proxy-service/users/" + id, HttpMethod.PUT, new HttpEntity<>(user), UserPayload.class).getBody();
+        return restTemplate.exchange("http://"+proxyUri+"/users/" + id, HttpMethod.PUT, new HttpEntity<>(user), UserPayload.class).getBody();
     }
 
     @HystrixCommand(fallbackMethod = "deleteFallback")
     public void delete(Integer id) {
-        restTemplate.delete("http://proxy-service/users/" + id);
+        restTemplate.delete("http://"+proxyUri+"/users/" + id);
     }
 
     //region fallbacks

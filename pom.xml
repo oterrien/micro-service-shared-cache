@@ -10,10 +10,11 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>common</module>
+        <module>common-lib</module>
         <module>client</module>
-        <module>server</module>
-        <module>h2-dataservice</module>
+        <module>proxy</module>
+        <module>dataserver</module>
+        <module>client-scheduler</module>
     </modules>
 
 </project>
