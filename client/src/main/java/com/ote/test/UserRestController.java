@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,9 +22,7 @@ public class UserRestController {
     private ProxyService proxyService;
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    @ResponseBody
-    @ResponseStatus(HttpStatus.FOUND)
-    public UserPayload get(@PathVariable("id") int id) {
+    public ResponseEntity<UserPayload> get(@PathVariable("id") int id) {
         log.info("get user where id " + id);
         return proxyService.read(id);
     }
@@ -56,7 +55,7 @@ public class UserRestController {
     //region exception handlers
     @ExceptionHandler(value = {ConstraintViolationException.class})
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    public String handleValidationFailure(ConstraintViolationException ex) {
+    public String handleValidationException(ConstraintViolationException ex) {
 
         StringBuilder messages = new StringBuilder();
         ex.getConstraintViolations().
@@ -66,7 +65,7 @@ public class UserRestController {
 
     @ExceptionHandler(value = {ProxyService.UnavailableProxyServiceException.class})
     @ResponseStatus(value = HttpStatus.SERVICE_UNAVAILABLE)
-    public String handleValidationFailure(ProxyService.UnavailableProxyServiceException ex) {
+    public String handleUnavailabilityException(ProxyService.UnavailableProxyServiceException ex) {
         return "Proxy is not available";
     }
     //endregion

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -19,40 +20,41 @@ public class ProxyService {
     @Autowired
     private RestTemplate restTemplate;
 
+
     @HystrixCommand(fallbackMethod = "readFallback")
-    public UserPayload read(Integer id) {
-        return restTemplate.getForObject("http://"+proxyUri+"/users/" + id, UserPayload.class);
+    public ResponseEntity<UserPayload> read(Integer id) {
+        return restTemplate.getForEntity("http://" + proxyUri + "/users/" + id, UserPayload.class);
     }
 
     @HystrixCommand(fallbackMethod = "createFallback")
-    public UserPayload create(UserPayload user) {
-        return restTemplate.exchange("http://"+proxyUri+"/users/", HttpMethod.PUT, new HttpEntity<>(user), UserPayload.class).getBody();
+    public ResponseEntity<UserPayload> create(UserPayload user) {
+        return restTemplate.exchange("http://" + proxyUri + "/users/", HttpMethod.PUT, new HttpEntity<>(user), UserPayload.class);
     }
 
     @HystrixCommand(fallbackMethod = "updateFallback")
-    public UserPayload update(Integer id, UserPayload user) {
-        return restTemplate.exchange("http://"+proxyUri+"/users/" + id, HttpMethod.PUT, new HttpEntity<>(user), UserPayload.class).getBody();
+    public ResponseEntity<UserPayload> update(Integer id, UserPayload user) {
+        return restTemplate.exchange("http://" + proxyUri + "/users/" + id, HttpMethod.PUT, new HttpEntity<>(user), UserPayload.class);
     }
 
     @HystrixCommand(fallbackMethod = "deleteFallback")
-    public void delete(Integer id) {
-        restTemplate.delete("http://"+proxyUri+"/users/" + id);
+    public ResponseEntity<Void> delete(Integer id) {
+        return restTemplate.exchange("http://" + proxyUri + "/users/" + id, HttpMethod.DELETE, null, Void.class);
     }
 
     //region fallbacks
-    private UserPayload readFallback(Integer id) {
+    private ResponseEntity<UserPayload> readFallback(Integer id) {
         throw new UnavailableProxyServiceException("Unable to read user for id " + id);
     }
 
-    private UserPayload createFallback(UserPayload user) {
+    private ResponseEntity<UserPayload> createFallback(UserPayload user) {
         throw new UnavailableProxyServiceException("Unable to create user " + user.toString());
     }
 
-    private UserPayload updateFallback(Integer id, UserPayload user) {
+    private ResponseEntity<UserPayload> updateFallback(Integer id, UserPayload user) {
         throw new UnavailableProxyServiceException("Unable to reset user for id " + id + " : " + user.toString());
     }
 
-    private void deleteFallback(Integer id) {
+    private ResponseEntity<Void> deleteFallback(Integer id) {
         throw new UnavailableProxyServiceException("Unable to delete user for id " + id);
     }
 

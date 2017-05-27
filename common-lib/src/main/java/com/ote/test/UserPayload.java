@@ -4,9 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @Data
-public class UserPayload {
+public class UserPayload implements Serializable {
 
     @JsonProperty("id")
     private Integer id;

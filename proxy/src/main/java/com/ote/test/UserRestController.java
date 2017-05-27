@@ -3,59 +3,68 @@ package com.ote.test;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
+import org.springframework.http.client.ClientHttpRequest;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RequestCallback;
+import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.ConstraintViolationException;
-import javax.validation.Valid;
+import java.io.IOException;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/users")
 @Slf4j
-@Validated
+@CacheConfig(cacheNames = "users")
 public class UserRestController {
 
-    @Value("${h2-dataservice.uri}")
-    public String dataserviceUri;
+    @Value("${dataservice.uri}")
+    private String dataserviceUri;
 
     @Autowired
     private RestTemplate restTemplate;
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    @ResponseBody
-    @ResponseStatus(HttpStatus.FOUND)
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Cacheable(key = "#id")
     public UserPayload get(@PathVariable("id") int id) {
         log.info("get user where id " + id);
         return restTemplate.getForObject(dataserviceUri + "/users/" + id, UserPayload.class);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    @ResponseBody
-    @ResponseStatus(HttpStatus.RESET_CONTENT)
-    public UserPayload update(@PathVariable("id") int id, @Valid @RequestBody UserPayload user) {
-        log.info("update user where id " + id);
-        return restTemplate.exchange(dataserviceUri + "/users/" + id, HttpMethod.PUT, new HttpEntity<>(user), UserPayload.class).getBody();
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @CachePut(key = "#id")
+    public UserPayload update(@PathVariable("id") int id, @RequestBody UserPayload user) throws Exception {
+        try {
+            log.info("update user where id " + id);
+            return restTemplate.exchange(dataserviceUri + "/users/" + id, HttpMethod.PUT, new HttpEntity<>(user), UserPayload.class).getBody();
+        } finally {
+            log.warn("updated");
+        }
     }
 
-    @RequestMapping(value = "/", method = RequestMethod.PUT)
-    @ResponseBody
-    @ResponseStatus(HttpStatus.CREATED)
-    public UserPayload create(@Valid @RequestBody UserPayload user) {
+    @RequestMapping(value = "/", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public UserPayload create(@RequestBody UserPayload user) {
         log.info("create user");
         user.setId(null);
         return restTemplate.exchange(dataserviceUri + "/users/", HttpMethod.PUT, new HttpEntity<>(user), UserPayload.class).getBody();
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    @ResponseBody
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @CacheEvict(key = "#id")
     public void delete(@PathVariable("id") int id) {
         log.info("delete user where id " + id);
-        restTemplate.delete(dataserviceUri + "/users/" + id);
+        restTemplate.exchange(dataserviceUri + "/users/" + id, HttpMethod.DELETE, null, Void.class);
     }
 
     //region exception handlers
@@ -67,6 +76,11 @@ public class UserRestController {
         ex.getConstraintViolations().
                 forEach(p -> messages.append(p.getMessage()).append("\n"));
         return messages.toString();
+    }
+
+    @ExceptionHandler(value = {HttpClientErrorException.class})
+    public ResponseEntity<String> handleHttpClientErrorException(HttpClientErrorException ex) {
+        return new ResponseEntity<>(ex.getMessage(), ex.getStatusCode());
     }
     //endregion
 }

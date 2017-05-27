@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class PingRestController {
 
     @Value("${spring.application.name}")
-    public String name;
+    private String name;
 
     @Value("${server.port}")
-    public int port;
+    private int port;
 
     /**
      * used by ribbon's client to ping this service
