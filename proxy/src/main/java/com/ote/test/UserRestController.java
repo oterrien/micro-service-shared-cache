@@ -25,8 +25,8 @@ import java.util.Collections;
 
 @RestController
 @RequestMapping("/users")
-@Slf4j
 @CacheConfig(cacheNames = "users")
+@Slf4j
 public class UserRestController {
 
     @Value("${dataservice.uri}")

@@ -1,5 +1,6 @@
 package com.ote.test;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
@@ -25,25 +26,21 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
         JedisConnectionFactory redisConnectionFactory = new JedisConnectionFactory();
-
-        // Defaults
         redisConnectionFactory.setHostName(redisHost);
         redisConnectionFactory.setPort(redisPort);
         return redisConnectionFactory;
     }
 
     @Bean
-    public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory cf) {
+    public RedisTemplate<String, String> redisTemplate(@Autowired RedisConnectionFactory cf) {
         RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(cf);
         return redisTemplate;
     }
 
     @Bean
-    public CacheManager cacheManager(RedisTemplate redisTemplate) {
+    public CacheManager cacheManager(@Autowired RedisTemplate redisTemplate) {
         RedisCacheManager cacheManager = new RedisCacheManager(redisTemplate);
-
-        // Number of seconds before expiration. Defaults to unlimited (0)
         cacheManager.setDefaultExpiration(300);
         return cacheManager;
     }

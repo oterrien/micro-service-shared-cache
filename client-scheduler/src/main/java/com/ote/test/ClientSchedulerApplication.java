@@ -10,10 +10,10 @@ import org.springframework.web.client.RestTemplate;
 @SpringBootApplication
 @EnableCircuitBreaker
 @EnableScheduling
-public class ClientBatchApplication {
+public class ClientSchedulerApplication {
 
     public static void main(String[] args) {
-        new SpringApplicationBuilder(ClientBatchApplication.class).run(args);
+        new SpringApplicationBuilder(ClientSchedulerApplication.class).run(args);
     }
 
     @Bean
