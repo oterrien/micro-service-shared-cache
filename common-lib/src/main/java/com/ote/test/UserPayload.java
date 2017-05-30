@@ -5,6 +5,10 @@ import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Data
 public class UserPayload implements Serializable {
@@ -19,4 +23,12 @@ public class UserPayload implements Serializable {
     @JsonProperty("last_name")
     @NotNull
     private String lastName;
+
+    public Map<String, List<String>> getFilterMap() {
+
+        Map<String, List<String>> map = new HashMap<>();
+        map.put("firstName", Arrays.asList(firstName));
+        map.put("lastName", Arrays.asList(lastName));
+        return map;
+    }
 }

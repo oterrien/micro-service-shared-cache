@@ -29,16 +29,14 @@ public class UserRestController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     @ResponseBody
-    @ResponseStatus(HttpStatus.RESET_CONTENT)
-    public UserPayload update(@PathVariable("id") int id, @Valid @RequestBody UserPayload user) {
+    public ResponseEntity<UserPayload> update(@PathVariable("id") int id, @Valid @RequestBody UserPayload user) {
         log.info("update user where id " + id);
         return proxyService.update(id, user);
     }
 
     @RequestMapping(value = "/", method = RequestMethod.PUT)
     @ResponseBody
-    @ResponseStatus(HttpStatus.CREATED)
-    public UserPayload create(@Valid @RequestBody UserPayload user) {
+    public ResponseEntity<UserPayload> create(@Valid @RequestBody UserPayload user) {
         log.info("create user");
         user.setId(null);
         return proxyService.create(user);
@@ -46,10 +44,9 @@ public class UserRestController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     @ResponseBody
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable("id") int id) {
+    public ResponseEntity<Void> delete(@PathVariable("id") int id) {
         log.info("delete user where id " + id);
-        proxyService.delete(id);
+        return proxyService.delete(id);
     }
 
     //region exception handlers

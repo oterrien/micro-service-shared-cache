@@ -5,6 +5,8 @@ logging:
 
 server:
   port: ${PORT:8081}
+  session.timeout: 1
+  connection-timeout : 100
 
 spring:
   application:

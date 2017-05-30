@@ -28,7 +28,7 @@ public class ProxyService {
 
     @HystrixCommand(fallbackMethod = "createFallback")
     public ResponseEntity<UserPayload> create(UserPayload user) {
-        return restTemplate.exchange("http://" + proxyUri + "/users/", HttpMethod.PUT, new HttpEntity<>(user), UserPayload.class);
+        return restTemplate.exchange("http://" + proxyUri + "/users", HttpMethod.POST, new HttpEntity<>(user), UserPayload.class);
     }
 
     @HystrixCommand(fallbackMethod = "updateFallback")

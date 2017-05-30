@@ -1,6 +1,9 @@
 package com.ote.test.persistence;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,6 +18,10 @@ public class UserPersistenceService {
             throw new NotFoundException(id);
         }
         return entity;
+    }
+
+    public Page<UserEntity> find(Specification<UserEntity> filter, Pageable pageRequest){
+        return userRepository.findAll(filter, pageRequest);
     }
 
     public UserEntity create(UserEntity userEntity){

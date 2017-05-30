@@ -2,12 +2,13 @@ package com.ote.test;
 
 import com.ote.test.persistence.UserEntity;
 import com.ote.test.persistence.UserPersistenceService;
-import com.ote.test.persistence.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,17 +27,33 @@ public class UserRestController {
     private UserMapperService userMapperService;
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.FOUND)
+    @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public UserPayload get(@PathVariable("id") int id) {
+    public UserPayload getOne(@PathVariable("id") int id) {
         log.info("get user where id " + id);
         UserPayload userPayload = userMapperService.convert(userPersistenceService.find(id));
-        log.info(userPayload.toString());
         return userPayload;
     }
 
+    @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public Page<UserPayload> getMany(@ModelAttribute UserPayload userPayloadFilter,
+                                     @RequestParam(required = false) String sortingBy,
+                                     @RequestParam(required = false, defaultValue = "ASC") String sortingDirection,
+                                     @RequestParam(required = false, defaultValue = "${page.default.size}") int pageSize,
+                                     @RequestParam(required = false, defaultValue = "0") int pageIndex) {
+
+        log.info("get user where filter is " + userPayloadFilter);
+        Specification<UserEntity> filter = userMapperService.getFilter(userPayloadFilter);
+        Pageable pageRequest = userMapperService.getPageRequest(sortingBy, sortingDirection, pageSize, pageIndex);
+        Page<UserPayload> page = userPersistenceService.find(filter, pageRequest).map(p -> userMapperService.convert(p));
+        log.info(page.getContent().toString());
+        return page;
+    }
+
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.FOUND) // PAY ATTENTION TO NOT USE RESET_CONTENT which does not allow any response body
+    @ResponseStatus(HttpStatus.OK) // PAY ATTENTION TO NOT USE RESET_CONTENT which does not allow any response body
     @ResponseBody
     public UserPayload update(@PathVariable("id") int id, @Valid @RequestBody UserPayload user) {
         try {
@@ -47,8 +64,8 @@ public class UserRestController {
         }
     }
 
-    @RequestMapping(value = "/", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public UserPayload create(@Valid @RequestBody UserPayload user) {
         log.info("create user");
@@ -56,7 +73,7 @@ public class UserRestController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.OK)
     public void delete(@PathVariable("id") int id) {
         log.info("delete user where id " + id);
         userPersistenceService.delete(id);

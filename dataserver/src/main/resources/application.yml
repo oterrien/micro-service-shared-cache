@@ -30,3 +30,7 @@ spring:
       path: /h2/console
   error:
     whitelabel.enabled: true
+
+page:
+  default:
+    size: 20
