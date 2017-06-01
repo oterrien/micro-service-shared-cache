@@ -14,7 +14,6 @@
         <module>client</module>
         <module>proxy</module>
         <module>dataserver</module>
-        <module>client-scheduler</module>
     </modules>
 
     <properties>

@@ -3,6 +3,8 @@ package com.ote.test;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -15,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.ConstraintViolationException;
+import javax.validation.Payload;
 
 @RestController
 @RequestMapping("/users")
@@ -28,6 +31,9 @@ public class UserRestController {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private CacheManager cacheManager;
+
     @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -40,11 +46,15 @@ public class UserRestController {
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public MyPage<UserPayload> getMany(@ModelAttribute UserPayload userPayloadFilter,
-                                       @RequestParam(required = false) String sortingBy,
-                                       @RequestParam(required = false) String sortingDirection,
-                                       @RequestParam(required = false) Integer pageSize,
-                                       @RequestParam(required = false) Integer pageIndex) {
+    @SuppressWarnings("unchecked")
+    public Page<UserPayload> getMany(@ModelAttribute UserPayload userPayloadFilter,
+                                     @RequestParam(required = false) String sortingBy,
+                                     @RequestParam(required = false) String sortingDirection,
+                                     @RequestParam(required = false) Integer pageSize,
+                                     @RequestParam(required = false) Integer pageIndex) {
+
+        Cache cache = cacheManager.getCache("usersByFilter");
+
 
         log.info("get user where filter is " + userPayloadFilter);
 
@@ -55,7 +65,7 @@ public class UserRestController {
                 .queryParam("pageIndex", pageIndex)
                 .queryParams(CollectionUtils.toMultiValueMap(userPayloadFilter.getFilterMap()));
 
-        return restTemplate.getForObject(builder.build().encode().toUri(), MyPage.class);
+        return (Page<UserPayload>) restTemplate.getForObject(builder.build().encode().toUri(), Page.class);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)

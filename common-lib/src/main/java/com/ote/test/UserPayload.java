@@ -1,5 +1,6 @@
 package com.ote.test;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -24,6 +25,7 @@ public class UserPayload implements Serializable {
     @NotNull
     private String lastName;
 
+    @JsonIgnore
     public Map<String, List<String>> getFilterMap() {
 
         Map<String, List<String>> map = new HashMap<>();
