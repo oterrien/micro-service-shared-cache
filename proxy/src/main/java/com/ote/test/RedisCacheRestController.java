@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/cache")
+@RequestMapping("/caches")
 @Slf4j
 public class RedisCacheRestController {
 

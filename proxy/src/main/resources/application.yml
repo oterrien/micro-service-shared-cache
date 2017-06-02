@@ -5,8 +5,6 @@ logging:
 
 server:
   port: ${PORT:8081}
-  session.timeout: 1
-  connection-timeout : 100
 
 spring:
   application:
@@ -26,3 +24,4 @@ dataservice.uri: http://localhost:8083
 redis:
   host: localhost
   port: 6379
+  expiration.timeout: 20

@@ -23,6 +23,9 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
     @Value("${redis.port}")
     private Integer redisPort;
 
+    @Value("${redis.expiration.timeout}")
+    private Integer redisExpirationTimeout;
+
     @Bean
     public JedisConnectionFactory redisConnectionFactory() {
         JedisConnectionFactory redisConnectionFactory = new JedisConnectionFactory();
@@ -41,7 +44,7 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
     @Bean
     public CacheManager cacheManager(@Autowired RedisTemplate redisTemplate) {
         RedisCacheManager cacheManager = new RedisCacheManager(redisTemplate);
-        cacheManager.setDefaultExpiration(300);
+        cacheManager.setDefaultExpiration(redisExpirationTimeout);
         return cacheManager;
     }
 }

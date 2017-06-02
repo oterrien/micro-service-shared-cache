@@ -1,14 +1,15 @@
 package com.ote.test;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.http.*;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
@@ -17,11 +18,10 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.ConstraintViolationException;
-import javax.validation.Payload;
+import java.lang.reflect.Method;
 
 @RestController
 @RequestMapping("/users")
-@CacheConfig(cacheNames = "users")
 @Slf4j
 public class UserRestController {
 
@@ -31,14 +31,11 @@ public class UserRestController {
     @Autowired
     private RestTemplate restTemplate;
 
-    @Autowired
-    private CacheManager cacheManager;
-
     @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    @Cacheable(key = "#id")
-    public UserPayload get(@PathVariable("id") int id) {
+    @Cacheable(cacheNames = "users", key = "#id")
+    public UserPayload getOne(@PathVariable("id") int id) {
         log.info("get user where id " + id);
         return restTemplate.getForObject(dataserviceUri + "/users/" + id, UserPayload.class);
     }
@@ -46,15 +43,12 @@ public class UserRestController {
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    @SuppressWarnings("unchecked")
-    public Page<UserPayload> getMany(@ModelAttribute UserPayload userPayloadFilter,
+    @Cacheable(cacheNames = "usersByFilter", keyGenerator = "GetManyCacheKeyGenerator")
+    public Page<UserPayload> getMany(@ModelAttribute UserPayloadFilter userPayloadFilter,
                                      @RequestParam(required = false) String sortingBy,
                                      @RequestParam(required = false) String sortingDirection,
                                      @RequestParam(required = false) Integer pageSize,
                                      @RequestParam(required = false) Integer pageIndex) {
-
-        Cache cache = cacheManager.getCache("usersByFilter");
-
 
         log.info("get user where filter is " + userPayloadFilter);
 
@@ -65,13 +59,14 @@ public class UserRestController {
                 .queryParam("pageIndex", pageIndex)
                 .queryParams(CollectionUtils.toMultiValueMap(userPayloadFilter.getFilterMap()));
 
-        return (Page<UserPayload>) restTemplate.getForObject(builder.build().encode().toUri(), Page.class);
+        return restTemplate.getForObject(builder.build().encode().toUri(), Page.class);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    @CachePut(key = "#id")
+    @CachePut(cacheNames = "users", key = "#id")
+    @CacheEvict(cacheNames = "usersByFilter")
     public UserPayload update(@PathVariable("id") int id, @RequestBody UserPayload user) throws Exception {
         try {
             log.info("update user where id " + id);
@@ -93,7 +88,7 @@ public class UserRestController {
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    @CacheEvict(key = "#id")
+    @Caching(evict = {@CacheEvict(cacheNames = "users", key = "#id"), @CacheEvict(cacheNames = "usersByFilter")})
     public void delete(@PathVariable("id") int id) {
         log.info("delete user where id " + id);
         restTemplate.exchange(dataserviceUri + "/users/" + id, HttpMethod.DELETE, null, Void.class);

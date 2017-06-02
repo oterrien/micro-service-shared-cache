@@ -63,11 +63,11 @@ public class UserMapperService {
 
             List<Predicate> predicates = new ArrayList<>();
 
-            if (filter.getFirstName() != null) {
+            if (!StringUtils.isEmpty(filter.getFirstName())) {
                 predicates.add(criteriaBuilder.equal(root.get("firstName"), filter.getFirstName()));
             }
 
-            if (filter.getLastName() != null) {
+            if (!StringUtils.isEmpty(filter.getLastName())) {
                 predicates.add(criteriaBuilder.equal(root.get("lastName"), filter.getLastName()));
             }
 

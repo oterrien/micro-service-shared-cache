@@ -3,11 +3,12 @@ package com.ote.test;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class Page<T> {
+public class Page<T> implements Serializable {
 
     private List<T> content;
 
@@ -21,7 +22,7 @@ public class Page<T> {
     private int numberOfElements;
 
     @Data
-    private static class Sort{
+    private static class Sort implements Serializable {
         private String direction;
         private String property;
         private boolean ignoreCase;
