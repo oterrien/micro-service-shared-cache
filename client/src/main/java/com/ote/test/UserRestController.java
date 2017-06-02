@@ -2,8 +2,10 @@ package com.ote.test;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -27,15 +29,24 @@ public class UserRestController {
         return proxyService.read(id);
     }
 
+    @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page> get(@ModelAttribute UserPayloadFilter userPayloadFilter,
+                                 @RequestParam(required = false) String sortingBy,
+                                 @RequestParam(required = false) String sortingDirection,
+                                 @RequestParam(required = false) Integer pageSize,
+                                 @RequestParam(required = false) Integer pageIndex) {
+
+        log.info("get user where filter is " + userPayloadFilter);
+        return proxyService.read(userPayloadFilter, sortingBy, sortingDirection, pageSize, pageIndex);
+    }
+
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    @ResponseBody
     public ResponseEntity<UserPayload> update(@PathVariable("id") int id, @Valid @RequestBody UserPayload user) {
         log.info("update user where id " + id);
         return proxyService.update(id, user);
     }
 
-    @RequestMapping(value = "/", method = RequestMethod.PUT)
-    @ResponseBody
+    @RequestMapping(value = "", method = RequestMethod.POST)
     public ResponseEntity<UserPayload> create(@Valid @RequestBody UserPayload user) {
         log.info("create user");
         user.setId(null);
@@ -43,10 +54,16 @@ public class UserRestController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    @ResponseBody
     public ResponseEntity<Void> delete(@PathVariable("id") int id) {
         log.info("delete user where id " + id);
         return proxyService.delete(id);
+    }
+
+    @RequestMapping(value = "", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> delete(@ModelAttribute UserPayloadFilter userPayloadFilter) {
+
+        log.info("delete user where filter is " + userPayloadFilter);
+        return proxyService.delete(userPayloadFilter);
     }
 
     //region exception handlers

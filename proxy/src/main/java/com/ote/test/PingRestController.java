@@ -20,7 +20,6 @@ public class PingRestController {
      */
     @RequestMapping("/")
     public String ping() {
-        log.info("ping");
         return name + " #" + port;
     }
 

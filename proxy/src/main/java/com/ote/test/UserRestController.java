@@ -1,7 +1,5 @@
 package com.ote.test;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,7 +7,6 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
-import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.http.*;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +15,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.ConstraintViolationException;
-import java.lang.reflect.Method;
 
 @RestController
 @RequestMapping("/users")
@@ -35,7 +31,7 @@ public class UserRestController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     @Cacheable(cacheNames = "users", key = "#id")
-    public UserPayload getOne(@PathVariable("id") int id) {
+    public UserPayload get(@PathVariable("id") int id) {
         log.info("get user where id " + id);
         return restTemplate.getForObject(dataserviceUri + "/users/" + id, UserPayload.class);
     }
@@ -44,7 +40,7 @@ public class UserRestController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     @Cacheable(cacheNames = "usersByFilter", keyGenerator = "GetManyCacheKeyGenerator")
-    public Page<UserPayload> getMany(@ModelAttribute UserPayloadFilter userPayloadFilter,
+    public Page<UserPayload> get(@ModelAttribute UserPayloadFilter userPayloadFilter,
                                      @RequestParam(required = false) String sortingBy,
                                      @RequestParam(required = false) String sortingDirection,
                                      @RequestParam(required = false) Integer pageSize,
@@ -92,6 +88,20 @@ public class UserRestController {
     public void delete(@PathVariable("id") int id) {
         log.info("delete user where id " + id);
         restTemplate.exchange(dataserviceUri + "/users/" + id, HttpMethod.DELETE, null, Void.class);
+    }
+
+    @RequestMapping(value = "", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    @Caching(evict = {@CacheEvict(cacheNames = "users"), @CacheEvict(cacheNames = "usersByFilter")})
+    public void delete(@ModelAttribute UserPayloadFilter userPayloadFilter) {
+
+        log.info("delete user where filter is " + userPayloadFilter);
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(dataserviceUri + "/users/")
+                .queryParams(CollectionUtils.toMultiValueMap(userPayloadFilter.getFilterMap()));
+
+        restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.DELETE, null, Void.class);
     }
 
     //region exception handlers

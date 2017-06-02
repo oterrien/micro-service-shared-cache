@@ -24,4 +24,4 @@ dataservice.uri: http://localhost:8083
 redis:
   host: localhost
   port: 6379
-  expiration.timeout: 20
+  expiration.timeout: 30
