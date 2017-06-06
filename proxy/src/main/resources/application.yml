@@ -9,6 +9,9 @@ server:
 spring:
   application:
     name: proxy-service
+  boot:
+    admin:
+      url: http://localhost:8080
 
 endpoints:
   health:
@@ -25,3 +28,7 @@ redis:
   host: localhost
   port: 6379
   expiration.timeout: 30
+
+management:
+  security:
+    enabled: false

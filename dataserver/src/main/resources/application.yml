@@ -9,6 +9,9 @@ server:
 spring:
   application:
     name: dataserver
+  boot:
+    admin:
+      url: http://localhost:8080
   datasource:
     url: jdbc:h2:mem:testdb
     username: sa
@@ -34,3 +37,7 @@ spring:
 page:
   default:
     size: 20
+
+management:
+  security:
+    enabled: false

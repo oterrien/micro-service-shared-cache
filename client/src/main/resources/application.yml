@@ -4,6 +4,9 @@ server:
 spring:
   application:
     name: client
+  boot:
+    admin:
+      url: http://localhost:8080
 
 endpoints:
   health:
@@ -27,3 +30,7 @@ hystrix:
         isolation:
           thread:
             timeoutInMilliseconds: 30000
+
+management:
+  security:
+    enabled: false

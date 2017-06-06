@@ -36,15 +36,15 @@ public class UserRestController {
         return restTemplate.getForObject(dataserviceUri + "/users/" + id, UserPayload.class);
     }
 
-    @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     @Cacheable(cacheNames = "usersByFilter", keyGenerator = "GetManyCacheKeyGenerator")
     public Page<UserPayload> get(@ModelAttribute UserPayloadFilter userPayloadFilter,
-                                     @RequestParam(required = false) String sortingBy,
-                                     @RequestParam(required = false) String sortingDirection,
-                                     @RequestParam(required = false) Integer pageSize,
-                                     @RequestParam(required = false) Integer pageIndex) {
+                                 @RequestParam(required = false) String sortingBy,
+                                 @RequestParam(required = false) String sortingDirection,
+                                 @RequestParam(required = false) Integer pageSize,
+                                 @RequestParam(required = false) Integer pageIndex) {
 
         log.info("get user where filter is " + userPayloadFilter);
 
@@ -72,7 +72,7 @@ public class UserRestController {
         }
     }
 
-    @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public UserPayload create(@RequestBody UserPayload user) {
